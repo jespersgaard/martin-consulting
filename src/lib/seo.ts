@@ -42,7 +42,7 @@ export interface SeoInput {
 
 export function buildSeo(input: SeoInput, site: URL | string = SITE.url) {
   const fullTitle =
-    input.pathname === '/' ? `${SITE.name} – ${SITE.tagline}` : `${input.title} | ${SITE.name}`;
+    input.pathname === '/' ? `${SITE.name} – IT-konsulent | AI & Power Platform` : `${input.title} | ${SITE.name}`;
   const image = absoluteUrl(input.image ?? SITE.defaultImage, site);
   return {
     title: fullTitle,
@@ -111,4 +111,48 @@ export const articleSchema = (a: ArticleInput, site: URL | string = SITE.url) =>
 
 export function formatDate(d: Date): string {
   return new Intl.DateTimeFormat('da-DK', { day: 'numeric', month: 'long', year: 'numeric' }).format(d);
+}
+
+export function professionalServiceSchema(site: URL | string = SITE.url) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'ProfessionalService',
+    '@id': `${absoluteUrl('/', site)}#service`,
+    name: `${SITE.name} – IT-konsulent`,
+    url: absoluteUrl('/', site),
+    description: SITE.description,
+    image: absoluteUrl(SITE.defaultImage, site),
+    areaServed: { '@type': 'Country', name: 'Danmark' },
+    founder: { '@id': `${absoluteUrl('/', site)}#person` },
+    knowsLanguage: 'da',
+    email: SITE.email,
+    serviceType: ['AI og Copilot', 'Power Platform', 'Digitalisering', 'Automatisering', 'IT-projektledelse', 'Produktledelse', 'Integrationer'],
+  };
+}
+
+export function breadcrumbSchema(crumbs: { name: string; path: string }[], site: URL | string = SITE.url) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: crumbs.map((c, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: c.name,
+      item: canonicalUrl(c.path, site),
+    })),
+  };
+}
+
+export function breadcrumbsFor(pathname: string, title: string) {
+  const parts = pathname.split('/').filter(Boolean);
+  const crumbs = [{ name: 'Forside', path: '/' }];
+  if (parts.length === 0) return crumbs;
+  const parent = parts[0] === 'blog' ? { name: 'Blog', path: '/blog/' } : parts[0] === 'cases' ? { name: 'Erfaring', path: '/erfaring/' } : null;
+  if (parts.length === 1) {
+    crumbs.push({ name: title, path: pathname });
+  } else {
+    if (parent) crumbs.push(parent);
+    crumbs.push({ name: title, path: pathname });
+  }
+  return crumbs;
 }

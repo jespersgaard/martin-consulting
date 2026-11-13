@@ -4,7 +4,7 @@ description: Et overblik over, hvad Microsoft Copilot kan bruges til i danske vi
 pubDate: 2025-09-15
 updatedDate: 2025-10-02
 author: Martin Jespersgaard
-image: /images/blog/hvad-er-copilot.svg
+image: /images/blog/hvad-er-copilot.png
 imageAlt: Illustration af Microsoft Copilot i en arbejdsgang
 tags: [Copilot, AI, Microsoft 365]
 draft: false

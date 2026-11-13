@@ -9,7 +9,7 @@ const posts = (await getCollection('blog', (p) => !p.data.draft)).sort(
 );
 ---
 
-<BaseLayout title="Blog" description="Indlæg om AI, Microsoft Copilot, Power Platform og digitalisering i danske virksomheder.">
+<BaseLayout title="Blog" description="Praktiske indlæg om AI, Microsoft Copilot, Power Platform, automatisering og digitalisering i danske virksomheder – skrevet af IT-konsulent Martin Jespersgaard.">
   <Hero heading="Blog" lead="Praktiske indlæg om AI, Copilot, Power Platform og digitalisering." />
   <div class="container-x grid gap-5 py-14 md:grid-cols-2 lg:grid-cols-3">
     {posts.map((p) => <PostCard post={p} />)}

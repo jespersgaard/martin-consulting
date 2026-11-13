@@ -3,7 +3,7 @@ title: Hvornår giver Power Platform mening?
 description: Power Platform kan spare tid og penge, men passer ikke til alt. Her er en tommelfingerregel for, hvornår det giver mening.
 pubDate: 2025-11-05
 author: Martin Jespersgaard
-image: /images/blog/power-platform.svg
+image: /images/blog/power-platform.png
 imageAlt: Illustration af Power Platform-byggeklodser
 tags: [Power Platform, Automatisering, Low-code]
 draft: false

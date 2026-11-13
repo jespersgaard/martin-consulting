@@ -6,6 +6,6 @@ export default defineConfig({
   site: 'https://www.jespersgaard.com',
   trailingSlash: 'always',
   build: { format: 'directory' },
-  integrations: [sitemap()],
+  integrations: [sitemap({ lastmod: new Date() })],
   vite: { plugins: [tailwindcss()] },
 });

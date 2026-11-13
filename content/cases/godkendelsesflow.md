@@ -1,10 +1,10 @@
 ---
-title: Automatisering af godkendelsesflow i produktionsvirksomhed
+title: Automatisering af godkendelsesflow
 description: Eksempel på, hvordan Power Platform erstattede manuelle e-mailgodkendelser og gav overblik og hurtigere sagsbehandling.
 industry: Produktion
 technologies: [Power Apps, Power Automate, SharePoint, Dataverse]
 published: 2025-06-01
-image: /images/cases/godkendelsesflow.svg
+image: /images/cases/godkendelsesflow.png
 imageAlt: Diagram over et automatiseret godkendelsesflow
 ---
 

@@ -2,7 +2,7 @@
 import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-import { buildSeo, personSchema, type SeoInput } from '../lib/seo';
+import { breadcrumbSchema, breadcrumbsFor, buildSeo, personSchema, professionalServiceSchema, type SeoInput } from '../lib/seo';
 
 interface Props extends Omit<SeoInput, 'pathname'> {
   schema?: object | object[];
@@ -10,7 +10,8 @@ interface Props extends Omit<SeoInput, 'pathname'> {
 const { schema, ...rest } = Astro.props;
 const pathname = Astro.url.pathname;
 const seo = buildSeo({ ...rest, pathname }, Astro.site);
-const schemas = [pathname === '/' ? personSchema(Astro.site) : null, ...(Array.isArray(schema) ? schema : [schema])].filter(Boolean);
+const crumbs = pathname === '/' || rest.noindex ? null : breadcrumbSchema(breadcrumbsFor(pathname, rest.title), Astro.site);
+const schemas = [pathname === '/' ? personSchema(Astro.site) : null, pathname === '/' ? professionalServiceSchema(Astro.site) : null, crumbs, ...(Array.isArray(schema) ? schema : [schema])].filter(Boolean);
 ---
 
 <!doctype html>

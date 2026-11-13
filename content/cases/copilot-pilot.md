@@ -1,10 +1,10 @@
 ---
-title: Copilot-pilot og AI-governance i servicevirksomhed
+title: Copilot-pilot og AI-governance
 description: Eksempel på et struktureret Copilot-pilotforløb med use cases, retningslinjer og måling af effekt.
 industry: Service og rådgivning
 technologies: [Microsoft Copilot, Microsoft 365, SharePoint, Purview]
 published: 2025-08-01
-image: /images/cases/copilot-pilot.svg
+image: /images/cases/copilot-pilot.png
 imageAlt: Diagram over et Copilot-pilotforløb
 ---
 

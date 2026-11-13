@@ -3,7 +3,7 @@ title: 5 fejl virksomheder begår med AI
 description: De fem mest almindelige fejl, når virksomheder indfører AI – og hvordan du undgår dem.
 pubDate: 2025-10-20
 author: Martin Jespersgaard
-image: /images/blog/ai-fejl.svg
+image: /images/blog/ai-fejl.png
 imageAlt: Illustration af fem faldgruber ved AI-projekter
 tags: [AI, Strategi, Digitalisering]
 draft: false
