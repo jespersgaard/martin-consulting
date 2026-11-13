@@ -1,39 +1,44 @@
 <?php
-// Kontaktformular-handler (kompatibel med PHP 5.6+). Ændr kun $to ved behov.
+// Kontaktformular-handler. Kræver PHP 8.1+ (ALTCHA-biblioteket ligger i vendor/).
+// Ændr kun $to ved behov.
+require __DIR__ . '/vendor/autoload.php';
+
+use AltchaOrg\Altcha\Algorithm\Pbkdf2;
+use AltchaOrg\Altcha\Altcha;
+use AltchaOrg\Altcha\CreateChallengeOptions;
+use AltchaOrg\Altcha\VerifySolutionOptions;
+
 $to = 'martin@jespersgaard.com';
-$allowedHosts = array('jespersgaard.com', 'www.jespersgaard.com');
-$minSeconds = 3;       // hurtigere afsendelse end dette er en bot
-$maxSeconds = 7200;    // token udløber efter 2 timer
-$maxPerHour = 5;       // pr. IP
-$maxLinks = 2;         // flere links i beskeden = spam
+$allowedHosts = ['jespersgaard.com', 'www.jespersgaard.com'];
+$maxPerHour = 5;
+$maxLinks = 2;
 
-$accept = isset($_SERVER['HTTP_ACCEPT']) ? $_SERVER['HTTP_ACCEPT'] : '';
-$wantsJson = strpos($accept, 'application/json') !== false;
+$wantsJson = str_contains($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json');
 
-function done($ok, $msg, $json, $code = 200)
+function done(bool $ok, string $msg, bool $json, int $code = 200): never
 {
     if ($json) {
         http_response_code($ok ? 200 : $code);
         header('Content-Type: application/json; charset=utf-8');
-        echo json_encode(array('ok' => $ok, 'message' => $msg));
+        echo json_encode(['ok' => $ok, 'message' => $msg]);
     } else {
         header('Location: /kontakt/?status=' . ($ok ? 'sendt' : 'fejl'));
     }
     exit;
 }
 
-function text_length($v)
+function text_length(string $v): int
 {
     return function_exists('mb_strlen') ? mb_strlen($v, 'UTF-8') : strlen($v);
 }
 
-function clean_line($v)
+function clean_line(string $v): string
 {
-    return trim(str_replace(array("\r", "\n"), ' ', $v));
+    return trim(str_replace(["\r", "\n"], ' ', $v));
 }
 
 // Hemmelig nøgle genereres én gang og gemmes ved siden af scriptet
-function secret_key()
+function secret_key(): string
 {
     $file = __DIR__ . '/.send-secret';
     if (is_readable($file)) {
@@ -42,40 +47,41 @@ function secret_key()
             return $s;
         }
     }
-    $s = function_exists('random_bytes') ? bin2hex(random_bytes(32)) : hash('sha256', uniqid('', true) . mt_rand() . __FILE__);
+    $s = bin2hex(random_bytes(32));
     if (@file_put_contents($file, $s) === false) {
-        return hash('sha256', __FILE__ . (isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : '') . filemtime(__FILE__));
+        return hash('sha256', __FILE__ . ($_SERVER['SERVER_NAME'] ?? '') . filemtime(__FILE__));
     }
     @chmod($file, 0600);
     return $s;
 }
 
-function sign($ts)
+function altcha_instance(): Altcha
 {
-    return hash_hmac('sha256', (string) $ts, secret_key());
+    return new Altcha(
+        hmacSignatureSecret: hash_hmac('sha256', 'signature', secret_key()),
+        hmacKeySignatureSecret: hash_hmac('sha256', 'key-signature', secret_key()),
+    );
 }
 
-function client_ip()
+function client_ip(): string
 {
-    return isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : 'unknown';
+    return $_SERVER['REMOTE_ADDR'] ?? 'unknown';
 }
 
-// Simpel rate limit pr. IP i den midlertidige mappe
-function rate_file()
+function temp_file(string $prefix, string $id): string
 {
-    return sys_get_temp_dir() . '/contact-rl-' . hash('sha256', client_ip() . secret_key());
+    return sys_get_temp_dir() . '/' . $prefix . hash('sha256', $id . secret_key());
 }
 
-function recent_hits()
+function recent_hits(): array
 {
-    $file = rate_file();
-    $now = time();
-    $hits = array();
+    $file = temp_file('contact-rl-', client_ip());
+    $hits = [];
     if (is_readable($file)) {
         $data = json_decode((string) file_get_contents($file), true);
         if (is_array($data)) {
             foreach ($data as $t) {
-                if ($now - (int) $t < 3600) {
+                if (time() - (int) $t < 3600) {
                     $hits[] = (int) $t;
                 }
             }
@@ -84,24 +90,40 @@ function recent_hits()
     return $hits;
 }
 
-function rate_limited($max)
-{
-    return count(recent_hits()) >= $max;
-}
-
-function record_hit()
+function record_hit(): void
 {
     $hits = recent_hits();
     $hits[] = time();
-    @file_put_contents(rate_file(), json_encode($hits), LOCK_EX);
+    @file_put_contents(temp_file('contact-rl-', client_ip()), json_encode($hits), LOCK_EX);
 }
 
-// Udsteder et signeret tidsstempel, som formularen henter ved sideindlæsning
-if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['token'])) {
-    $ts = time();
+// Hver løst udfordring kan kun bruges én gang
+function challenge_already_used(string $payload): bool
+{
+    $data = json_decode((string) base64_decode($payload, true), true);
+    $sig = is_array($data) ? ($data['challenge']['signature'] ?? '') : '';
+    if (!is_string($sig) || $sig === '') {
+        return true;
+    }
+    $file = temp_file('contact-ch-', $sig);
+    if (file_exists($file)) {
+        return true;
+    }
+    @file_put_contents($file, (string) time());
+    return false;
+}
+
+// Udsteder en ALTCHA-udfordring til widgetten
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['challenge'])) {
+    $challenge = altcha_instance()->createChallenge(new CreateChallengeOptions(
+        algorithm: new Pbkdf2(),
+        cost: 1000,
+        counter: random_int(500, 3000),
+        expiresAt: time() + 600,
+    ));
     header('Content-Type: application/json; charset=utf-8');
     header('Cache-Control: no-store');
-    echo json_encode(array('ts' => $ts, 'sig' => sign($ts)));
+    echo json_encode($challenge->toArray());
     exit;
 }
 
@@ -115,7 +137,7 @@ if (!empty($_POST['website'])) {
 }
 
 // Afvis forespørgsler fra andre sites
-foreach (array('HTTP_ORIGIN', 'HTTP_REFERER') as $h) {
+foreach (['HTTP_ORIGIN', 'HTTP_REFERER'] as $h) {
     if (!empty($_SERVER[$h])) {
         $host = parse_url($_SERVER[$h], PHP_URL_HOST);
         if (!in_array($host, $allowedHosts, true)) {
@@ -124,17 +146,26 @@ foreach (array('HTTP_ORIGIN', 'HTTP_REFERER') as $h) {
     }
 }
 
-// Signeret tidsstempel: skal være ægte, ikke for nyt og ikke for gammelt
-$ts = isset($_POST['ts']) ? (int) $_POST['ts'] : 0;
-$sig = isset($_POST['sig']) ? (string) $_POST['sig'] : '';
-$age = time() - $ts;
-if ($ts <= 0 || !hash_equals(sign($ts), $sig) || $age < $minSeconds || $age > $maxSeconds) {
-    done(false, 'Formularen er udløbet eller blev sendt for hurtigt. Genindlæs siden, og prøv igen.', $wantsJson, 400);
+// ALTCHA: proof-of-work skal være løst og gyldigt
+$payload = (string) ($_POST['altcha'] ?? '');
+$verified = false;
+if ($payload !== '') {
+    try {
+        $verified = altcha_instance()->verifySolution(new VerifySolutionOptions(
+            algorithm: new Pbkdf2(),
+            payload: $payload,
+        ))->verified;
+    } catch (Throwable $e) {
+        $verified = false;
+    }
+}
+if (!$verified || challenge_already_used($payload)) {
+    done(false, 'Bekræftelsen mod spam mislykkedes. Genindlæs siden, og prøv igen.', $wantsJson, 400);
 }
 
-$name = clean_line(isset($_POST['name']) ? (string) $_POST['name'] : '');
-$email = clean_line(isset($_POST['email']) ? (string) $_POST['email'] : '');
-$message = trim(isset($_POST['message']) ? (string) $_POST['message'] : '');
+$name = clean_line((string) ($_POST['name'] ?? ''));
+$email = clean_line((string) ($_POST['email'] ?? ''));
+$message = trim((string) ($_POST['message'] ?? ''));
 
 if ($name === '' || text_length($name) > 100 || !filter_var($email, FILTER_VALIDATE_EMAIL) || text_length($message) < 5 || text_length($message) > 5000) {
     done(false, 'Udfyld venligst alle felter korrekt.', $wantsJson, 422);
@@ -144,17 +175,17 @@ if (preg_match_all('#https?://|www\.#i', $name . ' ' . $message) > $maxLinks) {
     done(false, 'Beskeden indeholder for mange links.', $wantsJson, 422);
 }
 
-if (rate_limited($maxPerHour)) {
+if (count(recent_hits()) >= $maxPerHour) {
     done(false, 'Der er sendt for mange beskeder. Prøv igen senere.', $wantsJson, 429);
 }
 
 $subject = '=?UTF-8?B?' . base64_encode('Ny henvendelse fra ' . $name) . '?=';
 $body = "Navn: $name\nE-mail: $email\n\n$message\n";
-$headers = implode("\r\n", array(
+$headers = implode("\r\n", [
     'From: Kontaktformular <' . $to . '>',
     'Reply-To: ' . $email,
     'Content-Type: text/plain; charset=UTF-8',
-));
+]);
 
 $sent = mail($to, $subject, $body, $headers, '-f' . $to);
 if ($sent) {

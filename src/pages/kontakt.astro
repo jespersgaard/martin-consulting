@@ -20,8 +20,7 @@ const field = 'mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2
     <div class="hidden" aria-hidden="true">
       <label>Website <input name="website" type="text" tabindex="-1" autocomplete="off" /></label>
     </div>
-    <input type="hidden" name="ts" />
-    <input type="hidden" name="sig" />
+    <altcha-widget id="altcha" challenge="/send.php?challenge=1" auto="onload" language="da" theme="auto"></altcha-widget>
     <div class="flex items-center gap-4">
       <button type="submit" class="btn btn-primary">Send besked</button>
       <p id="form-status" role="status" class="text-sm"></p>
@@ -31,6 +30,8 @@ const field = 'mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2
 </PageView>
 
 <script>
+  import 'altcha';
+  import 'altcha/i18n/da';
   const form = document.getElementById('contact-form') as HTMLFormElement;
   const status = document.getElementById('form-status')!;
   const show = (ok: boolean, msg: string) => {
@@ -39,15 +40,6 @@ const field = 'mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2
   };
   const q = new URLSearchParams(location.search).get('status');
   if (q) show(q === 'sendt', q === 'sendt' ? 'Tak for din besked. Jeg vender tilbage hurtigst muligt.' : 'Beskeden kunne ikke sendes. Prøv igen.');
-  const loadToken = async () => {
-    try {
-      const res = await fetch('/send.php?token=1', { cache: 'no-store' });
-      const t = await res.json();
-      (form.elements.namedItem('ts') as HTMLInputElement).value = String(t.ts);
-      (form.elements.namedItem('sig') as HTMLInputElement).value = t.sig;
-    } catch {}
-  };
-  loadToken();
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = form.querySelector('button')!;
@@ -58,7 +50,7 @@ const field = 'mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2
       const data = await res.json();
       show(data.ok, data.message);
       if (data.ok) form.reset();
-      await loadToken();
+      (document.getElementById('altcha') as any)?.reset?.();
     } catch {
       show(false, 'Beskeden kunne ikke sendes. Prøv igen senere.');
     } finally {
