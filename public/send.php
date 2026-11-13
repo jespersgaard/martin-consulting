@@ -40,7 +40,7 @@ function clean_line(string $v): string
 // Hemmelig nøgle genereres én gang og gemmes ved siden af scriptet
 function secret_key(): string
 {
-    $file = __DIR__ . '/.send-secret';
+    $file = __DIR__ . '/.send-secret-2';
     if (is_readable($file)) {
         $s = trim((string) file_get_contents($file));
         if ($s !== '') {
