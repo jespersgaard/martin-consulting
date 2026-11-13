@@ -1,6 +1,6 @@
 <?php
 // Kontaktformular-handler (kompatibel med PHP 5.6+). Ændr kun $to ved behov.
-$to = 'kontakt@jespersgaard.com';
+$to = 'martin@jespersgaard.com';
 
 $accept = isset($_SERVER['HTTP_ACCEPT']) ? $_SERVER['HTTP_ACCEPT'] : '';
 $wantsJson = strpos($accept, 'application/json') !== false;

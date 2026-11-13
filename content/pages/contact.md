@@ -3,7 +3,7 @@ title: Kontakt
 description: Kontakt Martin Jespersgaard for en uforpligtende snak om AI, Copilot, Power Platform og digitalisering. Skriv via formularen, så vender jeg tilbage hurtigt.
 heading: Kontakt
 lead: Fortæl kort om jeres udfordring, så vender jeg tilbage hurtigst muligt.
-email: kontakt@jespersgaard.com
+email: martin@jespersgaard.com
 linkedin: https://www.linkedin.com/in/jespersgaard/
 ---
 

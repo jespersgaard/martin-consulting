@@ -5,7 +5,7 @@ export const SITE = {
     'Erfaren IT-konsulent med baggrund inden for softwareudvikling, projektledelse, produktledelse, Power Platform, integrationer og AI.',
   url: 'https://www.jespersgaard.com',
   locale: 'da_DK',
-  email: 'kontakt@jespersgaard.com',
+  email: 'martin@jespersgaard.com',
   linkedin: 'https://www.linkedin.com/in/jespersgaard/',
   defaultImage: '/images/og-default.png',
 };
