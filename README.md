@@ -82,6 +82,10 @@ Anbefalet størrelse til forsidebilleder og Open Graph: 1200x630 px (PNG eller J
 
 Hver ny udgivelse kræver nyt build og ny upload.
 
+## Deploy via GitHub (Simply.com "Importer fra Git")
+
+`./scripts/deploy.sh` bygger sitet og pusher indholdet af `dist/` til det offentlige repo `jespersgaard/martin-consulting-site`. Kræver `gh` (logget ind). I Simply.com bruges *Importer fra Git* med URL `https://github.com/jespersgaard/martin-consulting-site.git` og destinationsmappen `/public_html`.
+
 ## Kontaktformular
 
 Formularen på `/kontakt/` sender til `public/send.php`, som bruges af PHP på Simply.com (`mail()`). Filen kopieres automatisk til `dist/` og uploades sammen med resten. Modtageren sættes i `$to` øverst i `send.php`. Formularen virker kun på serveren hos Simply.com, ikke i `npm run dev` eller `npm run preview`. Spam begrænses med et skjult honeypot-felt.
