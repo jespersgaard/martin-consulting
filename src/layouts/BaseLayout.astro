@@ -1,0 +1,58 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { buildSeo, personSchema, type SeoInput } from '../lib/seo';
+
+interface Props extends Omit<SeoInput, 'pathname'> {
+  schema?: object | object[];
+}
+const { schema, ...rest } = Astro.props;
+const pathname = Astro.url.pathname;
+const seo = buildSeo({ ...rest, pathname }, Astro.site);
+const schemas = [pathname === '/' ? personSchema(Astro.site) : null, ...(Array.isArray(schema) ? schema : [schema])].filter(Boolean);
+---
+
+<!doctype html>
+<html lang="da">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{seo.title}</title>
+    <meta name="description" content={seo.description} />
+    <meta name="robots" content={seo.robots} />
+    <meta name="theme-color" content="#2563EB" />
+    <link rel="canonical" href={seo.canonical} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+
+    <meta property="og:site_name" content="Martin Jespersgaard" />
+    <meta property="og:locale" content="da_DK" />
+    <meta property="og:type" content={seo.type} />
+    <meta property="og:title" content={seo.title} />
+    <meta property="og:description" content={seo.description} />
+    <meta property="og:url" content={seo.canonical} />
+    <meta property="og:image" content={seo.image} />
+    {seo.publishedTime && <meta property="article:published_time" content={seo.publishedTime} />}
+    {seo.modifiedTime && <meta property="article:modified_time" content={seo.modifiedTime} />}
+    {seo.tags.map((t) => <meta property="article:tag" content={t} />)}
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={seo.title} />
+    <meta name="twitter:description" content={seo.description} />
+    <meta name="twitter:image" content={seo.image} />
+
+    {schemas.map((s) => <script type="application/ld+json" set:html={JSON.stringify(s)} />)}
+
+    <script is:inline>
+      const dark = localStorage.getItem('theme') !== 'light';
+      document.documentElement.classList.toggle('dark', dark);
+    </script>
+  </head>
+  <body class="flex min-h-screen flex-col">
+    <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:rounded focus:bg-primary focus:px-3 focus:py-2 focus:text-white">Gå til indhold</a>
+    <Header />
+    <main id="main" class="flex-1"><slot /></main>
+    <Footer />
+  </body>
+</html>

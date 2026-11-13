@@ -1,0 +1,24 @@
+---
+import { NAV, SITE } from '../lib/seo';
+---
+
+<footer class="mt-24 border-t border-slate-200 dark:border-slate-800">
+  <div class="container-x grid gap-8 py-12 md:grid-cols-3">
+    <div>
+      <p class="font-semibold text-secondary dark:text-white">{SITE.name}</p>
+      <p class="mt-2 text-sm">{SITE.tagline}</p>
+    </div>
+    <nav aria-label="Footernavigation">
+      <ul class="space-y-2 text-sm">
+        {NAV.map((n) => <li><a href={n.href} class="hover:text-primary">{n.label}</a></li>)}
+      </ul>
+    </nav>
+    <div class="text-sm">
+      <p><a href={`mailto:${SITE.email}`} class="hover:text-primary">{SITE.email}</a></p>
+      <p class="mt-2"><a href={SITE.linkedin} rel="me noopener" class="hover:text-primary">LinkedIn</a></p>
+    </div>
+  </div>
+  <div class="border-t border-slate-200 py-4 text-center text-xs dark:border-slate-800">
+    © {new Date().getFullYear()} {SITE.name}. Alle rettigheder forbeholdes.
+  </div>
+</footer>

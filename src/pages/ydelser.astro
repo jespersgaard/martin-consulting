@@ -1,0 +1,60 @@
+---
+import { getEntry } from 'astro:content';
+import PageView from '../components/PageView.astro';
+
+const all = (await getEntry('pages', 'services'))!.data.packages;
+const packages = all.filter((p) => !p.detail);
+const detailed = all.filter((p) => p.detail);
+---
+
+<PageView id="services" showItems>
+  <section class="mt-16" aria-labelledby="pakker">
+    <h2 id="pakker" class="text-2xl font-bold tracking-tight">Pakker og priser</h2>
+    <p class="mt-2 text-sm">Priser er vejledende og ekskl. moms.</p>
+    <div class="mt-8 grid gap-5 md:grid-cols-2">
+      {packages.map((p) => (
+        <div class="card flex flex-col">
+          <h3 class="text-lg font-semibold">{p.title}</h3>
+          <p class="mt-1 text-xl font-bold text-primary">{p.price}</p>
+          <p class="mt-3 text-sm">{p.text}</p>
+          <ul class="mt-4 flex-1 space-y-1 text-sm">
+            {p.features.map((f) => <li class="flex gap-2"><span class="text-accent" aria-hidden="true">✓</span>{f}</li>)}
+          </ul>
+        </div>
+      ))}
+    </div>
+    <div class="mt-8 flex flex-wrap items-center gap-4">
+      <a href="/kontakt/" class="btn btn-primary">Få et tilbud</a>
+      <span class="text-sm">Passer ingen af pakkerne? Kontakt mig for et tilbud tilpasset jeres behov.</span>
+    </div>
+  </section>
+
+  {detailed.map((p, i) => (
+    <section class="mt-16 border-t border-slate-200 pt-12 dark:border-slate-800" aria-labelledby={`pakke-${i}`}>
+      <div class="flex flex-wrap items-baseline justify-between gap-2">
+        <h2 id={`pakke-${i}`} class="text-2xl font-bold tracking-tight">{p.title}</h2>
+        <p class="text-xl font-bold text-primary">{p.price}</p>
+      </div>
+      <p class="mt-3 max-w-3xl">{p.detail!.intro}</p>
+      <p class="mt-3 text-sm"><strong>Tidsforbrug:</strong> {p.detail!.duration}</p>
+      <div class="mt-6 grid gap-8 md:grid-cols-2">
+        <div>
+          <h3 class="font-semibold">Det får I</h3>
+          <ul class="mt-3 space-y-2 text-sm">
+            {p.detail!.included.map((f) => <li class="flex gap-2"><span class="text-accent" aria-hidden="true">✓</span>{f}</li>)}
+          </ul>
+        </div>
+        {p.detail!.notIncluded.length > 0 && (
+          <div>
+            <h3 class="font-semibold">Det er ikke med</h3>
+            <ul class="mt-3 space-y-2 text-sm">
+              {p.detail!.notIncluded.map((f) => <li class="flex gap-2"><span class="text-slate-400" aria-hidden="true">–</span>{f}</li>)}
+            </ul>
+          </div>
+        )}
+      </div>
+      {p.detail!.note && <p class="mt-6 rounded-lg bg-slate-50 p-4 text-sm dark:bg-slate-900">{p.detail!.note}</p>}
+      <a href="/kontakt/" class="btn btn-primary mt-6">Få et tilbud</a>
+    </section>
+  ))}
+</PageView>

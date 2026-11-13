@@ -1,0 +1,21 @@
+---
+import { getCollection } from 'astro:content';
+import PageView from '../components/PageView.astro';
+
+const cases = (await getCollection('cases')).sort((a, b) => b.data.published.valueOf() - a.data.published.valueOf());
+---
+
+<PageView id="experience">
+  <h2 class="mt-16 text-2xl font-bold tracking-tight">Udvalgte cases</h2>
+  <div class="mt-8 grid gap-5 md:grid-cols-2">
+    {cases.map((c) => (
+      <a href={`/cases/${c.id}/`} class="card block">
+        {c.data.image && <img src={c.data.image} alt={c.data.imageAlt ?? ''} width="640" height="336" loading="lazy" decoding="async" class="mb-4 aspect-[1200/630] w-full rounded-lg object-cover" />}
+        <p class="text-xs font-semibold uppercase tracking-wider text-accent">{c.data.industry}</p>
+        <h3 class="mt-1 text-lg font-semibold">{c.data.title}</h3>
+        <p class="mt-2 text-sm">{c.data.description}</p>
+        <div class="mt-4 flex flex-wrap gap-2">{c.data.technologies.map((t) => <span class="tag">{t}</span>)}</div>
+      </a>
+    ))}
+  </div>
+</PageView>

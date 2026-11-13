@@ -1,0 +1,57 @@
+---
+import { getCollection, getEntry, render } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from '../components/Hero.astro';
+import PostCard from '../components/PostCard.astro';
+
+const home = (await getEntry('pages', 'home'))!;
+const { Content } = await render(home);
+const d = home.data;
+const posts = (await getCollection('blog', (p) => !p.data.draft))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .slice(0, 3);
+---
+
+<BaseLayout title={d.title} description={d.description} image={d.image}>
+  <Hero large eyebrow="IT-konsulent · Danmark" heading={d.heading ?? d.title} lead={d.lead} cta={d.cta} secondaryCta={d.secondaryCta} />
+
+  <section class="container-x py-16">
+    <div class="prose prose-lg prose-slate max-w-3xl dark:prose-invert"><Content /></div>
+  </section>
+
+  <section class="container-x pb-16" aria-labelledby="ydelser">
+    <h2 id="ydelser" class="text-2xl font-bold tracking-tight">Ydelser</h2>
+    <div class="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      {d.items.map((i) => (
+        <a href={i.href ?? '/ydelser/'} class="card block"><h3 class="font-semibold">{i.title}</h3><p class="mt-2 text-sm">{i.text}</p></a>
+      ))}
+    </div>
+  </section>
+
+  <section class="border-y border-slate-200 bg-slate-50 py-16 dark:border-slate-800 dark:bg-slate-900" aria-labelledby="kompetencer">
+    <div class="container-x">
+      <h2 id="kompetencer" class="text-2xl font-bold tracking-tight">Kompetencer</h2>
+      <ul class="mt-8 flex flex-wrap gap-3">
+        {d.skills.map((s) => <li class="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium dark:border-slate-700 dark:bg-slate-950">{s}</li>)}
+      </ul>
+    </div>
+  </section>
+
+  <section class="container-x py-16" aria-labelledby="blog">
+    <div class="flex items-end justify-between">
+      <h2 id="blog" class="text-2xl font-bold tracking-tight">Seneste fra bloggen</h2>
+      <a href="/blog/" class="text-sm font-semibold text-primary">Se alle indlæg →</a>
+    </div>
+    <div class="mt-8 grid gap-5 md:grid-cols-3">
+      {posts.map((p) => <PostCard post={p} />)}
+    </div>
+  </section>
+
+  <section class="container-x pb-8">
+    <div class="rounded-2xl bg-secondary px-8 py-12 text-center">
+      <h2 class="text-2xl font-bold !text-white sm:text-3xl">Skal vi tage en uforpligtende snak?</h2>
+      <p class="mx-auto mt-3 max-w-xl text-slate-300">Fortæl mig om jeres udfordring, så finder vi ud af, om og hvordan jeg kan hjælpe.</p>
+      <a href="/kontakt/" class="btn mt-6 bg-accent text-secondary hover:bg-teal-300">Kontakt mig</a>
+    </div>
+  </section>
+</BaseLayout>

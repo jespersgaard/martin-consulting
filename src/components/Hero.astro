@@ -1,0 +1,25 @@
+---
+interface Props {
+  heading: string;
+  lead?: string;
+  eyebrow?: string;
+  cta?: { label: string; href: string };
+  secondaryCta?: { label: string; href: string };
+  large?: boolean;
+}
+const { heading, lead, eyebrow, cta, secondaryCta, large } = Astro.props;
+---
+
+<section class="border-b border-slate-200 bg-gradient-to-b from-slate-50 to-white dark:border-slate-800 dark:from-slate-900 dark:to-slate-950">
+  <div class:list={['container-x', large ? 'py-20 sm:py-28' : 'py-14 sm:py-20']}>
+    {eyebrow && <p class="mb-4 text-sm font-semibold uppercase tracking-wider text-accent">{eyebrow}</p>}
+    <h1 class:list={['max-w-3xl font-bold tracking-tight', large ? 'text-4xl sm:text-6xl' : 'text-3xl sm:text-5xl']}>{heading}</h1>
+    {lead && <p class="mt-6 max-w-2xl text-lg leading-relaxed">{lead}</p>}
+    {(cta || secondaryCta) && (
+      <div class="mt-8 flex flex-wrap gap-3">
+        {cta && <a href={cta.href} class="btn btn-primary">{cta.label}</a>}
+        {secondaryCta && <a href={secondaryCta.href} class="btn btn-secondary">{secondaryCta.label}</a>}
+      </div>
+    )}
+  </div>
+</section>

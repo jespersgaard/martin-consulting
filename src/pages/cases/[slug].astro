@@ -1,0 +1,35 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { articleSchema, formatDate } from '../../lib/seo';
+
+export async function getStaticPaths() {
+  const cases = await getCollection('cases');
+  return cases.map((c) => ({ params: { slug: c.id }, props: { entry: c } }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const d = entry.data;
+---
+
+<BaseLayout
+  title={d.title}
+  description={d.description}
+  image={d.image}
+  type="article"
+  publishedTime={d.published}
+  schema={articleSchema({ title: d.title, description: d.description, pathname: Astro.url.pathname, image: d.image, datePublished: d.published, tags: d.technologies })}
+>
+  <article class="container-x py-14">
+    <header class="max-w-3xl">
+      <a href="/erfaring/" class="text-sm font-semibold text-primary">← Erfaring</a>
+      <p class="mt-4 text-sm font-semibold uppercase tracking-wider text-accent">{d.industry}</p>
+      <h1 class="mt-2 text-3xl font-bold tracking-tight sm:text-5xl">{d.title}</h1>
+      <p class="mt-4 text-sm text-slate-500"><time datetime={d.published.toISOString()}>{formatDate(d.published)}</time></p>
+      <div class="mt-4 flex flex-wrap gap-2">{d.technologies.map((t) => <span class="tag">{t}</span>)}</div>
+    </header>
+    {d.image && <img src={d.image} alt={d.imageAlt ?? ''} width="1200" height="630" fetchpriority="high" decoding="async" class="mt-8 aspect-[1200/630] w-full max-w-3xl rounded-xl object-cover" />}
+    <div class="prose prose-lg prose-slate mt-10 max-w-3xl dark:prose-invert"><Content /></div>
+  </article>
+</BaseLayout>

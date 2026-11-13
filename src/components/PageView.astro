@@ -1,0 +1,37 @@
+---
+import { getEntry, render } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from './Hero.astro';
+
+interface Props { id: string; showItems?: boolean }
+const { id, showItems = false } = Astro.props;
+const page = (await getEntry('pages', id))!;
+const { Content } = await render(page);
+const d = page.data;
+---
+
+<BaseLayout title={d.title} description={d.description} image={d.image}>
+  <Hero heading={d.heading ?? d.title} lead={d.lead} cta={d.cta} secondaryCta={d.secondaryCta} />
+  <div class="container-x py-14">
+    <div class:list={[d.portrait && 'grid items-start gap-10 md:grid-cols-[1fr_10rem] lg:grid-cols-[1fr_12rem]']}>
+      <div class="prose prose-slate max-w-3xl dark:prose-invert prose-headings:tracking-tight">
+        <Content />
+      </div>
+      {d.portrait && (
+        <figure class="order-first mx-auto w-24 md:order-none md:w-full md:sticky md:top-24">
+          <div class="overflow-hidden rounded-2xl bg-gradient-to-br from-blue-100 via-slate-100 to-teal-100 ring-1 ring-slate-200 dark:from-blue-950 dark:via-slate-900 dark:to-teal-950 dark:ring-slate-800">
+            <img src={d.portrait} alt={d.portraitAlt ?? ''} width="768" height="984" loading="eager" decoding="async" class="aspect-[4/5] w-full object-cover object-bottom" />
+          </div>
+        </figure>
+      )}
+    </div>
+    {showItems && d.items.length > 0 && (
+      <div class="mt-12 grid gap-5 md:grid-cols-2">
+        {d.items.map((i) => (
+          <div class="card"><h2 class="text-lg font-semibold">{i.title}</h2><p class="mt-2 text-sm">{i.text}</p></div>
+        ))}
+      </div>
+    )}
+    <slot />
+  </div>
+</BaseLayout>
