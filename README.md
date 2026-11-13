@@ -88,4 +88,4 @@ Hver ny udgivelse kræver nyt build og ny upload.
 
 ## Kontaktformular
 
-Formularen på `/kontakt/` sender til `public/send.php`, som bruges af PHP på Simply.com (`mail()`). Filen kopieres automatisk til `dist/` og uploades sammen med resten. Modtageren sættes i `$to` øverst i `send.php`. Formularen virker kun på serveren hos Simply.com, ikke i `npm run dev` eller `npm run preview`. Spam begrænses med et skjult honeypot-felt.
+Formularen på `/kontakt/` sender til `public/send.php`, som bruges af PHP på Simply.com (`mail()`). Filen kopieres automatisk til `dist/` og uploades sammen med resten. Modtageren sættes i `$to` øverst i `send.php`. Formularen virker kun på serveren hos Simply.com, ikke i `npm run dev` eller `npm run preview`. Spam begrænses med flere lag: skjult honeypot-felt, signeret tidsstempel (formularen skal have været åben i mindst 3 sekunder og højst 2 timer), kontrol af afsendersted, maks. 2 links i beskeden og maks. 5 beskeder pr. time pr. IP. Den hemmelige nøgle til tidsstemplet oprettes automatisk som `.send-secret` på serveren og skjules af `.htaccess`.

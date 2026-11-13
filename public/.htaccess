@@ -1,0 +1,4 @@
+# Skjul hemmelig nøgle og skjulte filer
+<FilesMatch "^\.">
+  Require all denied
+</FilesMatch>
