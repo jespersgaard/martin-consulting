@@ -61,9 +61,14 @@ function client_ip()
 }
 
 // Simpel rate limit pr. IP i den midlertidige mappe
-function rate_limited($max)
+function rate_file()
 {
-    $file = sys_get_temp_dir() . '/contact-rl-' . hash('sha256', client_ip() . secret_key());
+    return sys_get_temp_dir() . '/contact-rl-' . hash('sha256', client_ip() . secret_key());
+}
+
+function recent_hits()
+{
+    $file = rate_file();
     $now = time();
     $hits = array();
     if (is_readable($file)) {
@@ -76,12 +81,19 @@ function rate_limited($max)
             }
         }
     }
-    if (count($hits) >= $max) {
-        return true;
-    }
-    $hits[] = $now;
-    @file_put_contents($file, json_encode($hits), LOCK_EX);
-    return false;
+    return $hits;
+}
+
+function rate_limited($max)
+{
+    return count(recent_hits()) >= $max;
+}
+
+function record_hit()
+{
+    $hits = recent_hits();
+    $hits[] = time();
+    @file_put_contents(rate_file(), json_encode($hits), LOCK_EX);
 }
 
 // Udsteder et signeret tidsstempel, som formularen henter ved sideindlæsning
@@ -139,10 +151,15 @@ if (rate_limited($maxPerHour)) {
 $subject = '=?UTF-8?B?' . base64_encode('Ny henvendelse fra ' . $name) . '?=';
 $body = "Navn: $name\nE-mail: $email\n\n$message\n";
 $headers = implode("\r\n", array(
-    'From: Kontaktformular <noreply@jespersgaard.com>',
+    'From: Kontaktformular <' . $to . '>',
     'Reply-To: ' . $email,
     'Content-Type: text/plain; charset=UTF-8',
 ));
 
-$sent = mail($to, $subject, $body, $headers);
+$sent = mail($to, $subject, $body, $headers, '-f' . $to);
+if ($sent) {
+    record_hit();
+} else {
+    error_log('Kontaktformular: mail() fejlede');
+}
 done($sent, $sent ? 'Tak for din besked. Jeg vender tilbage hurtigst muligt.' : 'Beskeden kunne ikke sendes. Prøv igen senere.', $wantsJson, 500);
