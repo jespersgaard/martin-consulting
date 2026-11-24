@@ -1,0 +1,38 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import PostCard from './PostCard.astro';
+interface Props { posts: CollectionEntry<'blog'>[] }
+const { posts } = Astro.props;
+const btn = 'rounded-md px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-primary aria-pressed:bg-primary aria-pressed:text-white dark:text-slate-300';
+---
+
+<div class="container-x flex justify-end pt-6">
+  <div class="inline-flex gap-1 rounded-lg border border-slate-200 p-1 dark:border-slate-700" role="group" aria-label="Visning">
+    <button type="button" data-view-btn="grid" class={btn} aria-pressed="true">Bokse</button>
+    <button type="button" data-view-btn="list" class={btn} aria-pressed="false">Liste</button>
+  </div>
+</div>
+<div id="posts" data-view="grid" class="group/posts container-x grid gap-5 py-6 data-[view=grid]:md:grid-cols-2 data-[view=grid]:lg:grid-cols-3">
+  {posts.map((p) => <PostCard post={p} />)}
+</div>
+
+<script is:inline>
+  (function () {
+    var el = document.getElementById('posts');
+    var btns = document.querySelectorAll('[data-view-btn]');
+    function set(v) {
+      el.setAttribute('data-view', v);
+      btns.forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-view-btn') === v)); });
+    }
+    var saved = null;
+    try { saved = localStorage.getItem('blog-view'); } catch (e) {}
+    if (saved === 'list' || saved === 'grid') set(saved);
+    btns.forEach(function (b) {
+      b.addEventListener('click', function () {
+        var v = b.getAttribute('data-view-btn');
+        set(v);
+        try { localStorage.setItem('blog-view', v); } catch (e) {}
+      });
+    });
+  })();
+</script>

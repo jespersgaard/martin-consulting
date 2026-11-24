@@ -1,0 +1,25 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Hero from '../../../components/Hero.astro';
+import PostList from '../../../components/PostList.astro';
+import TagCloud from '../../../components/TagCloud.astro';
+import { getPublishedPosts, getTagCounts, tagSlug } from '../../../lib/blog';
+
+export async function getStaticPaths() {
+  const tags = await getTagCounts();
+  const posts = await getPublishedPosts();
+  return tags.map((t) => ({
+    params: { tag: t.slug },
+    props: { tag: t.tag, tags, total: posts.length, posts: posts.filter((p) => p.data.tags.some((x) => tagSlug(x) === t.slug)) },
+  }));
+}
+
+const { tag, tags, total, posts } = Astro.props;
+const { tag: slug } = Astro.params;
+---
+
+<BaseLayout title={`Blog: ${tag}`} description={`Blogindlæg om ${tag} af IT-konsulent Martin Jespersgaard.`}>
+  <Hero heading={`Blog: ${tag}`} lead={`${posts.length} indlæg om ${tag}.`} />
+  <div class="container-x pt-10"><TagCloud tags={tags} active={slug} total={total} /></div>
+  <PostList posts={posts} />
+</BaseLayout>

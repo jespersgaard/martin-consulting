@@ -1,0 +1,22 @@
+---
+interface Props {
+  tags: { tag: string; count: number; slug: string }[];
+  active?: string;
+  total: number;
+}
+const { tags, active, total } = Astro.props;
+const max = Math.max(...tags.map((t) => t.count), 1);
+const size = (c: number) => ['text-sm', 'text-base', 'text-lg', 'text-xl'][Math.min(3, Math.floor((c / max) * 3.99))];
+const base = 'rounded-full border px-3 py-1 font-medium transition-colors';
+const on = 'border-primary bg-primary text-white';
+const off = 'border-slate-200 text-slate-700 hover:border-primary hover:text-primary dark:border-slate-700 dark:text-slate-200';
+---
+
+<nav aria-label="Filtrér indlæg efter emne" class="flex flex-wrap items-center gap-2">
+  <a href="/blog/" class:list={[base, 'text-sm', active ? off : on]} aria-current={active ? undefined : 'page'}>Alle ({total})</a>
+  {tags.map((t) => (
+    <a href={`/blog/tag/${t.slug}/`} class:list={[base, size(t.count), active === t.slug ? on : off]} aria-current={active === t.slug ? 'page' : undefined}>
+      {t.tag} <span class="text-xs opacity-70">({t.count})</span>
+    </a>
+  ))}
+</nav>
